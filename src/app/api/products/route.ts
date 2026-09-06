@@ -13,14 +13,15 @@ const productSchema = z.object({
   image: z.string().trim().min(1).max(8_000_000),
   description: z.string().trim().min(1),
   highlights: z.array(z.string().trim().min(1)).default([]),
-  groupType: z.enum(["Extintor", "Suporte", "Placa de Sinalização"]),
-  type: z.literal("product").default("product"),
+  groupType: z.string().trim().min(1),
+  type: z.enum(["product", "service"]).default("product"),
 });
 
 const slugify = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-export async function GET() {
-  const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
+export async function GET(request: Request) {
+  const type = new URL(request.url).searchParams.get("type") ?? "product";
+  const products = await prisma.product.findMany({ where: { type }, orderBy: { createdAt: "desc" } });
   return NextResponse.json(products);
 }
 

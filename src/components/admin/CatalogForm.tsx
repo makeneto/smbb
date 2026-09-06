@@ -27,7 +27,7 @@ export default function CatalogForm({ kind, item, backHref }: Props) {
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setPending(true); setMessage("")
     if (!form.image) { setMessage("Adicione uma imagem do seu computador."); setPending(false); return }
-    const payload = { ...form, price: Number(form.price), oldPrice: Number(form.oldPrice || 0), highlights: form.highlights.filter(Boolean), type: "product" }
+    const payload = { ...form, price: Number(form.price), oldPrice: Number(form.oldPrice || 0), highlights: form.highlights.filter(Boolean), type: kind === "Serviço" ? "service" : "product" }
     const response = await fetch(form.id ? `/api/products/${form.id}` : "/api/products", { method: form.id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
     if (!response.ok) { const result = await response.json().catch(() => ({})); setMessage(result.error ?? "Não foi possível guardar o produto."); setPending(false); return }
     router.push(backHref); router.refresh()
