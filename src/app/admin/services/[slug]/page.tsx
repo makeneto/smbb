@@ -18,9 +18,15 @@ export default async function EditServicePage({
       backHref="/admin/services"
       item={{
         name: service.title,
+        brand: "SMBB",
         description: service.description,
         price: service.price,
-        image: service.image
+        oldPrice: "",
+        accent: "from-slate-700 via-stone-700 to-neutral-900",
+        accentColor: "#facc15",
+        image: service.image,
+        highlights: [""],
+        groupType: "Extintor"
       }}
     />
   );
