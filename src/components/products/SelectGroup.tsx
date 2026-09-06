@@ -1,12 +1,9 @@
 "use client"
 
-import { products } from "@/data/products"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-const productGroups = Array.from(
-  new Set(products.map((product) => product.groupType)),
-)
+const productGroups = ["Extintor", "Suporte", "Placa de Sinalização"] as const
+
 
 const groupTranslationKeys = {
   Extintor: "filters.extinguishers",

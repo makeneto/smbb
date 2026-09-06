@@ -4,7 +4,7 @@ import Link from "next/link"
 import { ArrowUpRight, Search } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import Image from "next/image"
+
 
 import SelectGroup from "@/components/products/SelectGroup"
 import useSelectGroup from "@/hooks/useSelectGroup"
@@ -16,7 +16,7 @@ function formatKz(value: number) {
 export default function Home() {
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
-  const { selectedGroup, setSelectedGroup, visibleProducts } = useSelectGroup({
+  const { selectedGroup, setSelectedGroup, visibleProducts, isLoading, error } = useSelectGroup({
     searchQuery,
   })
 
@@ -49,6 +49,9 @@ export default function Home() {
         </div>
 
         <section className="space-y-10">
+          {isLoading && <p className="text-sm text-slate-500">A carregar produtos...</p>}
+          {error && <p className="text-sm text-red-600">Não foi possível carregar os produtos.</p>}
+          {!isLoading && !error && visibleProducts.length === 0 && <p className="text-sm text-slate-500">Nenhum produto encontrado.</p>}
           <div className="grid gap-5 sm:grid-cols-3 md:grid-cols-4">
             {visibleProducts.map((product) => {
               return (
@@ -58,13 +61,7 @@ export default function Home() {
                 >
                   <Link href={`/${product.id}`} className="group">
                     <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-1">
-                      <Image
-                        src={product.image}
-                        alt=""
-                        width={150}
-                        height={150}
-                        className="xl:my-5 2xl:my-8 mx-auto"
-                      />
+<img src={product.image} alt={product.name} className="mx-auto h-[150px] w-[150px] object-contain xl:my-5 2xl:my-8" />
                     </div>
 
                     <div className="space-y-3 px-2 pb-2.5">
