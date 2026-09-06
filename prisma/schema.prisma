@@ -16,7 +16,7 @@ model Product {
   oldPrice    Int      @default(0)
   accent      String   @default("from-slate-700 via-stone-700 to-neutral-900")
   accentColor String   @default("#facc15")
-  image       String   @default("/product.png")
+  image       String   @db.Text
   description String
   highlights  String[]
   groupType   String

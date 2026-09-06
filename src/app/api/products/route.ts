@@ -10,7 +10,7 @@ const productSchema = z.object({
   oldPrice: z.coerce.number().int().nonnegative().default(0),
   accent: z.string().default("from-slate-700 via-stone-700 to-neutral-900"),
   accentColor: z.string().default("#facc15"),
-  image: z.string().trim().min(1).default("/product.png"),
+  image: z.string().trim().min(1).max(8_000_000),
   description: z.string().trim().min(1),
   highlights: z.array(z.string().trim().min(1)).default([]),
   groupType: z.enum(["Extintor", "Suporte", "Placa de Sinalização"]),
