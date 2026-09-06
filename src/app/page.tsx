@@ -16,7 +16,7 @@ function formatKz(value: number) {
 export default function Home() {
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
-  const { selectedGroup, setSelectedGroup, visibleProducts } = useSelectGroup({
+  const { selectedGroup, setSelectedGroup, visibleProducts, isLoading, error } = useSelectGroup({
     searchQuery,
   })
 
@@ -49,6 +49,9 @@ export default function Home() {
         </div>
 
         <section className="space-y-10">
+          {isLoading && <p className="text-sm text-slate-500">A carregar produtos...</p>}
+          {error && <p className="text-sm text-red-600">Não foi possível carregar os produtos.</p>}
+          {!isLoading && !error && visibleProducts.length === 0 && <p className="text-sm text-slate-500">Nenhum produto encontrado.</p>}
           <div className="grid gap-5 sm:grid-cols-3 md:grid-cols-4">
             {visibleProducts.map((product) => {
               return (

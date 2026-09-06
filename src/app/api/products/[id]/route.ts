@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 const productSchema = z.object({
   name: z.string().trim().min(1), brand: z.string().trim().min(1),
@@ -18,6 +19,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAdminAuthenticated())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   const { id } = await params;
   const parsed = productSchema.partial().safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
@@ -28,6 +30,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAdminAuthenticated())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   const { id } = await params;
   const existing = await prisma.product.findFirst({ where: { OR: [{ id }, { slug: id }] } });
   if (!existing) return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });

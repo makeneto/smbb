@@ -1,109 +1,21 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link"
+import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
-type CatalogFormProps = {
-  kind: "Produto" | "Serviço";
-  item?: {
-    name: string;
-    description: string;
-    price: string;
-    image: string;
-  };
-  backHref: string;
-};
+type FormProduct = { id?: string; name: string; brand: string; price: number | string; oldPrice: number | string; accent: string; accentColor: string; image: string; description: string; highlights: string[]; groupType: "Extintor" | "Suporte" | "Placa de Sinalização" }
+type Props = { kind: "Produto" | "Serviço"; item?: FormProduct; backHref: string }
+const empty: FormProduct = { name: "", brand: "", price: "", oldPrice: "", accent: "from-slate-700 via-stone-700 to-neutral-900", accentColor: "#facc15", image: "/product.png", description: "", highlights: [""], groupType: "Extintor" }
+const inputClass = "rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
 
-export default function CatalogForm({
-  kind,
-  item,
-  backHref
-}: CatalogFormProps) {
-  const [name, setName] = useState(item?.name ?? "");
-  const [description, setDescription] = useState(item?.description ?? "");
-  const [price, setPrice] = useState(item?.price ?? "");
-  const [image, setImage] = useState<File | null>(null);
-
-  return (
-    <main className="mx-auto max-w-3xl">
-      <Link
-        href={backHref}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Voltar para {kind.toLocaleLowerCase()}s
-      </Link>
-
-      <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 md:p-8">
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-500">
-          Administração
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-          {item
-            ? `Personalizar ${kind.toLocaleLowerCase()}`
-            : `Adicionar ${kind.toLocaleLowerCase()}`}
-        </h1>
-
-        <form
-          className="mt-8 grid gap-5"
-          encType="multipart/form-data"
-          onSubmit={(event) => event.preventDefault()}
-        >
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Nome
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              required
-              className="rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Descrição
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              required
-              rows={5}
-              className="resize-y rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
-            />
-          </label>
-          <div className="grid gap-5 md:grid-cols-2">
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
-              {kind === "Produto" ? "Preço" : "Preço inicial"}
-              <input
-                value={price}
-                onChange={(event) => setPrice(event.target.value)}
-                required
-                className="rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
-              Imagem
-              <input
-                type="file"
-                accept="image/*"
-                required={!item}
-                onChange={(event) => setImage(event.target.files?.[0] ?? null)}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none file:mr-3 file:rounded-full file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 focus:border-blue-500"
-              />
-              {item?.image && !image && (
-                <span className="text-xs font-normal text-slate-400">
-                  Imagem atual: {item.image}
-                </span>
-              )}
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"
-          >
-            <Save className="h-4 w-4" />
-            Salvar {kind.toLocaleLowerCase()}
-          </button>
-        </form>
-      </div>
-    </main>
-  );
+export default function CatalogForm({ kind, item, backHref }: Props) {
+  const [form, setForm] = useState<FormProduct>(item ?? empty)
+  const [pending, setPending] = useState(false)
+  const [message, setMessage] = useState("")
+  const router = useRouter()
+  const set = <K extends keyof FormProduct>(key: K, value: FormProduct[K]) => setForm((current) => ({ ...current, [key]: value }))
+  async function submit(event: React.FormEvent) { event.preventDefault(); setPending(true); setMessage(""); const payload = { ...form, price: Number(form.price), oldPrice: Number(form.oldPrice || 0), highlights: form.highlights.filter(Boolean), type: "product" }; const response = await fetch(form.id ? `/api/products/${form.id}` : "/api/products", { method: form.id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); if (!response.ok) { setMessage("Não foi possível guardar o produto."); setPending(false); return } router.push(backHref); router.refresh() }
+  return <main className="mx-auto max-w-3xl"><Link href={backHref} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500"><ArrowLeft className="h-4 w-4" />Voltar para {kind.toLocaleLowerCase()}s</Link><div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 md:p-8"><p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-500">Administração</p><h1 className="mt-2 text-2xl font-semibold text-slate-900">{form.id ? `Editar ${kind.toLocaleLowerCase()}` : `Adicionar ${kind.toLocaleLowerCase()}`}</h1><form className="mt-8 grid gap-5" onSubmit={submit}><div className="grid gap-5 md:grid-cols-2"><label className="grid gap-2 text-sm font-medium text-slate-700">Nome<input className={inputClass} value={form.name} onChange={(e) => set("name", e.target.value)} required /></label><label className="grid gap-2 text-sm font-medium text-slate-700">Marca<input className={inputClass} value={form.brand} onChange={(e) => set("brand", e.target.value)} required /></label><label className="grid gap-2 text-sm font-medium text-slate-700">Preço<input type="number" className={inputClass} value={form.price} onChange={(e) => set("price", e.target.value)} required /></label><label className="grid gap-2 text-sm font-medium text-slate-700">Preço antigo<input type="number" className={inputClass} value={form.oldPrice} onChange={(e) => set("oldPrice", e.target.value)} /></label><label className="grid gap-2 text-sm font-medium text-slate-700">Grupo<select className={inputClass} value={form.groupType} onChange={(e) => set("groupType", e.target.value as FormProduct["groupType"])}><option>Extintor</option><option>Suporte</option><option>Placa de Sinalização</option></select></label><label className="grid gap-2 text-sm font-medium text-slate-700">Cor de destaque<input type="color" className="h-10 w-full rounded-lg border border-slate-200" value={form.accentColor} onChange={(e) => set("accentColor", e.target.value)} /></label></div><label className="grid gap-2 text-sm font-medium text-slate-700">Gradiente Tailwind<input className={inputClass} value={form.accent} onChange={(e) => set("accent", e.target.value)} /></label><label className="grid gap-2 text-sm font-medium text-slate-700">Imagem (URL)<input className={inputClass} value={form.image} onChange={(e) => set("image", e.target.value)} required /></label><label className="grid gap-2 text-sm font-medium text-slate-700">Descrição<textarea className={`${inputClass} resize-y`} rows={5} value={form.description} onChange={(e) => set("description", e.target.value)} required /></label><fieldset className="grid gap-2"><legend className="text-sm font-medium text-slate-700">Destaques</legend>{form.highlights.map((highlight, index) => <div className="flex gap-2" key={index}><input className={`${inputClass} flex-1`} value={highlight} onChange={(e) => set("highlights", form.highlights.map((value, i) => i === index ? e.target.value : value))} /><button type="button" onClick={() => set("highlights", form.highlights.filter((_, i) => i !== index))} className="rounded-lg p-2 text-red-500 hover:bg-red-50" aria-label="Remover destaque"><Trash2 size={16} /></button></div>)}<button type="button" onClick={() => set("highlights", [...form.highlights, ""])} className="inline-flex w-fit items-center gap-2 text-sm font-medium text-blue-600"><Plus size={16} />Adicionar destaque</button></fieldset>{message && <p className="text-sm text-red-600">{message}</p>}<button type="submit" disabled={pending} className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600"><Save className="h-4 w-4" />{pending ? "A guardar..." : "Guardar produto"}</button></form></div></main>
 }
