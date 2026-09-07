@@ -50,7 +50,7 @@ export default function Home() {
 
         <section className="space-y-10">
           {isLoading && <p className="text-sm text-slate-500">A carregar produtos...</p>}
-          {error && <p className="text-sm text-red-600">Não foi possível carregar os produtos.</p>}
+          {error && <p className="text-sm text-red-600">{error.message}</p>}
           {!isLoading && !error && visibleProducts.length === 0 && <p className="text-sm text-slate-500">Nenhum produto encontrado.</p>}
           <div className="grid gap-5 sm:grid-cols-3 md:grid-cols-4">
             {visibleProducts.map((product) => {
