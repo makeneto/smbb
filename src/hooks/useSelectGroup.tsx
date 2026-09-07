@@ -4,10 +4,12 @@ import useSWR from "swr"
 import { useMemo, useState } from "react"
 import type { Product } from "@/data/products"
 
-const fetcher = (url: string) => fetch(url).then((response) => {
-  if (!response.ok) throw new Error("Não foi possível carregar os produtos")
-  return response.json() as Promise<Product[]>
-})
+const fetcher = async (url: string) => {
+  const response = await fetch(url)
+  const body = await response.json().catch(() => null)
+  if (!response.ok) throw new Error(body?.error ?? "Não foi possível carregar os produtos")
+  return body as Product[]
+}
 
 export default function useSelectGroup({ searchQuery }: { searchQuery: string }) {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null)

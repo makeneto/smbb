@@ -20,18 +20,28 @@ const productSchema = z.object({
 const slugify = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 export async function GET(request: Request) {
-  const type = new URL(request.url).searchParams.get("type") ?? "product";
-  const products = await prisma.product.findMany({ where: { type }, orderBy: { createdAt: "desc" } });
-  return NextResponse.json(products);
+  try {
+    const type = new URL(request.url).searchParams.get("type") ?? "product";
+    const products = await prisma.product.findMany({ where: { type }, orderBy: { createdAt: "desc" } });
+    return NextResponse.json(products);
+  } catch (error) {
+    console.error("[products] GET failed", error);
+    return NextResponse.json({ error: "Não foi possível conectar ao banco de dados." }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
-  if (!(await isAdminAuthenticated())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  const parsed = productSchema.safeParse(await request.json());
-  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-  const data = parsed.data;
-  const baseSlug = slugify(data.name);
-  const slug = `${baseSlug}-${Date.now().toString(36)}`;
-  const product = await prisma.product.create({ data: { ...data, slug } });
-  return NextResponse.json(product, { status: 201 });
+  try {
+    if (!(await isAdminAuthenticated())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const parsed = productSchema.safeParse(await request.json());
+    if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+    const data = parsed.data;
+    const baseSlug = slugify(data.name);
+    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+    const product = await prisma.product.create({ data: { ...data, slug } });
+    return NextResponse.json(product, { status: 201 });
+  } catch (error) {
+    console.error("[products] POST failed", error);
+    return NextResponse.json({ error: "Não foi possível guardar o registo." }, { status: 500 });
+  }
 }
